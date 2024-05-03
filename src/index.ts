@@ -21,6 +21,12 @@ const app = new Hono()
 
 app.get('/api/discs/:uid', async (c) => {
   const uid = c.req.param('uid')
+  if (!uid) {
+    return c.json({ error: 'User ID is required' }, 400)
+  }
+  if (!/^\d+$/.test(uid) || parseInt(uid) < 1) {
+    return c.json({ error: 'Invalid user ID' }, 400)
+  }
   const cacheKey = `discs_data_${uid}`
   const cache = await c.env.CD_COLLECTION.get(cacheKey)
 
@@ -40,6 +46,12 @@ app.get('/api/discs/:uid', async (c) => {
 
 app.get('/view/:uid', async (c) => {
   const uid = c.req.param('uid')
+  if (!uid) {
+    return c.html('<h1>User ID is required</h1>', 400)
+  }
+  if (!/^\d+$/.test(uid) || parseInt(uid) < 1) {
+    return c.html('<h1>Invalid user ID</h1> <p>User ID must be a positive integer</p>', 400)
+  }
   const resp = await fetch(`http://localhost:8787/api/discs/${uid}`)
   const discs = await resp.json()
 
