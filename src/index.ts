@@ -9,7 +9,7 @@ export interface Env {
 interface Disc {
   cover: string
   comment: string
-  labelid: number
+  labelid: string
   id: string
   onlyhavegift: boolean
   title: string
@@ -59,13 +59,13 @@ app.get('/api/disc/:id', async (c) => {
 
   const disc: Disc = {
     cover: $('img#imgsrc0').attr('data-src') || '',
-    labelid: parseInt($('a[href^="/l/"]').attr('href')?.split('/').pop() || '0'),
+    labelid: $('a[href^="/l/"]').attr('href')?.replace('/l/', '') || '',
     id,
     onlyhavegift: false,
     title: $('h1').first().text().trim(),
-    labelcover: $('body > div:nth-child(4) > div:nth-child(1) > div.col-md-12.col-lg-3.align-self-start.justify-content-end > a > img').attr('src') || '',
+    labelcover: $('div.col-md-12.col-lg-3.align-self-start.justify-content-end > a > img').attr('data-src') || '',
     boost: null,
-    label: $('body > div:nth-child(4) > div:nth-child(1) > div.col-md-12.col-lg-3.align-self-start.justify-content-end > h1 > a').text().trim(),
+    label: $('div.col-md-12.col-lg-3.align-self-start.justify-content-end > h1 > a').text().trim(),
     comment: '',
   }
 
