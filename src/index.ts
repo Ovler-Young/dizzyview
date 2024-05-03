@@ -154,7 +154,6 @@ app.get('/view/:uid', async (c) => {
                   <img src="${disc.labelcover}" alt="${disc.label}" />
                 </a>
               </p>
-              <a href="/edit/${uid}/${disc.id}">Edit</a>
             </div>
           `).join('')}
         </div>
@@ -329,7 +328,47 @@ app.get('/wishlist/:uid', async (c) => {
         <meta charset="UTF-8" />
         <title>Add to Wishlist</title>
         <style>
-          /* ... */
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        form {
+          max-width: 500px;
+          margin: 0 auto;
+        }
+        label {
+          display: block;
+          margin-bottom: 10px;
+        }
+        input[type="text"],
+        textarea {
+          width: 100%;
+          padding: 8px;
+          margin-bottom: 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+        button {
+          padding: 8px 16px;
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #45a049;
+        }
+        .disc-image {
+          max-width: 200px;
+          max-height: 200px;
+          margin-bottom: 10px;
+        }
         </style>
       </head>
       <body>
