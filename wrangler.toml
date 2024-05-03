@@ -1,0 +1,7 @@
+name = "cd-collection"
+compatibility_date = "2023-05-28"
+main = "src/index.ts"
+
+kv_namespaces = [
+  { binding = "CD_COLLECTION", id = "your_kv_namespace_id" }
+]
