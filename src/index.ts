@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { KVNamespace } from '@cloudflare/workers-types'
+
 export interface Env {
   CD_COLLECTION: KVNamespace;
 }
@@ -48,13 +49,47 @@ app.get('/view/:uid', async (c) => {
       <head>
         <meta charset="UTF-8" />
         <title>My CD Collection</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+          }
+          h1 {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          #discs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-gap: 20px;
+          }
+          .disc {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+          }
+          .disc img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+          }
+          .disc h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+          }
+          .disc p {
+            font-size: 14px;
+            color: #666;
+          }
+        </style>
       </head>
       <body>
         <h1>My CD Collection</h1>
         <div id="discs">
           ${discs.map(disc => `
-            <div>
-              <img src="${disc.cover}" alt="${disc.title}" style="width: 200px; height: auto;" />
+            <div class="disc">
+              <img src="${disc.cover}" alt="${disc.title}" />
               <h2>${disc.title}</h2>
               <p>${disc.label}</p>
             </div>
@@ -64,6 +99,5 @@ app.get('/view/:uid', async (c) => {
     </html>
   `)
 })
-
 
 export default app
