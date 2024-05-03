@@ -94,6 +94,21 @@ app.get('/view/:uid', async (c) => {
             font-size: 14px;
             color: #666;
           }
+          .disc-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+          }
+          .label-link {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 5px;
+          }
+          .label-link img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+          }
         </style>
       </head>
       <body>
@@ -101,9 +116,16 @@ app.get('/view/:uid', async (c) => {
         <div id="discs">
           ${discs.map(disc => `
             <div class="disc">
-              <img src="${disc.cover}" alt="${disc.title}" />
-              <h2>${disc.title}</h2>
-              <p>${disc.label}</p>
+              <a href="https://www.dizzylab.net/d/${disc.id}/" class="disc-link">
+                <img src="${disc.cover}" alt="${disc.title}" />
+                <h2>${disc.title}</h2>
+              </a>
+              <p>
+                <span>${disc.label}</span>
+                <a href="https://www.dizzylab.net/l/${disc.label}/" class="label-link">
+                  <img src="${disc.labelcover}" alt="${disc.label}" />
+                </a>
+              </p>
             </div>
           `).join('')}
         </div>
