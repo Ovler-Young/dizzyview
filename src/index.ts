@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { KVNamespace } from '@cloudflare/workers-types'
+import { load } from 'cheerio'
 
 export interface Env {
   CD_COLLECTION: KVNamespace;
@@ -34,7 +35,7 @@ app.get('/api/discs/:uid', async (c) => {
     return c.json(JSON.parse(cache))
   }
 
-  const resp = await fetch(`https://www.dizzylab.net/apis/getotheruserinfo/?r=20&uid=${uid}`)
+  const resp = await fetch(`https://www.dizzylab.net/apis/getotheruserinfo/?r=100&uid=${uid}`)
   const data = await resp.json()
 
   await c.env.CD_COLLECTION.put(cacheKey, JSON.stringify(data.discs), {
@@ -42,6 +43,32 @@ app.get('/api/discs/:uid', async (c) => {
   })
 
   return c.json(data.discs)
+})
+
+
+app.get('/api/disc/:id', async (c) => {
+  const id = c.req.param('id')
+  if (!id) {
+    return c.json({ error: 'Disc ID is required' }, 400)
+  }
+
+  const resp = await fetch(`https://www.dizzylab.net/d/${id}/`)
+  const html = await resp.text()
+  const $ = load(html)
+
+  const disc: Disc = {
+    cover: $('img#imgsrc0').attr('data-src') || '',
+    labelid: 0,
+    id,
+    onlyhavegift: false,
+    title: $('h1').first().text().trim(),
+    labelcover: $('.label-link img').attr('src') || '',
+    boost: null,
+    label: $('.label-link').prev('span').text().trim(),
+    comment: '',
+  }
+
+  return c.json(disc)
 })
 
 app.get('/view/:uid', async (c) => {
@@ -116,7 +143,7 @@ app.get('/view/:uid', async (c) => {
         <div id="discs">
           ${discs.map(disc => `
             <div class="disc">
-              <a href="https://www.dizzylab.net/d/${disc.id}/" class="disc-link">
+              <a href="${disc.promoLink || `https://www.dizzylab.net/d/${disc.id}/`}" class="disc-link">
                 <img src="${disc.cover}" alt="${disc.title}" />
                 <h2>${disc.title}</h2>
               </a>
@@ -129,9 +156,73 @@ app.get('/view/:uid', async (c) => {
             </div>
           `).join('')}
         </div>
+
+        <h2>Add Dizzylab Disc</h2>
+        <form id="addDiscForm">
+          <label for="discUrl">Dizzylab Disc URL:</label>
+          <input type="text" id="discUrl" name="discUrl" required>
+          <button type="submit">Add Disc</button>
+        </form>
+
+        <div id="discDetails"></div>
+
+        <script>
+          const addDiscForm = document.getElementById('addDiscForm')
+          const discDetailsDiv = document.getElementById('discDetails')
+
+          addDiscForm.addEventListener('submit', async (event) => {
+            event.preventDefault()
+            const discUrl = document.getElementById('discUrl').value
+            const discId = discUrl.split('/').pop()
+
+            const response = await fetch(\`/api/disc/\${discId}\`)
+            const disc = await response.json()
+
+            discDetailsDiv.innerHTML = \`
+              <h3>Disc Details</h3>
+              <img src="\${disc.cover}" alt="\${disc.title}" />
+              <input type="text" id="discTitle" value="\${disc.title}">
+              <input type="text" id="discCover" value="\${disc.cover}">
+              <input type="text" id="discPromoLink" value="\${disc.promoLink || ''}">
+              <button id="saveChanges">Save Changes</button>
+            \`
+
+            const saveChangesButton = document.getElementById('saveChanges')
+            saveChangesButton.addEventListener('click', () => {
+              const updatedTitle = document.getElementById('discTitle').value
+              const updatedCover = document.getElementById('discCover').value
+              const updatedPromoLink = document.getElementById('discPromoLink').value
+
+              disc.title = updatedTitle
+              disc.cover = updatedCover
+              disc.promoLink = updatedPromoLink
+
+              const discElement = document.createElement('div')
+              discElement.classList.add('disc')
+              discElement.innerHTML = \`
+                <a href="\${disc.promoLink || \`https://www.dizzylab.net/d/\${disc.id}/\`}" class="disc-link">
+                  <img src="\${disc.cover}" alt="\${disc.title}" />
+                  <h2>\${disc.title}</h2>
+                </a>
+                <p>
+                  <span>\${disc.label}</span>
+                  <a href="https://www.dizzylab.net/l/\${disc.label}/" class="label-link">
+                    <img src="\${disc.labelcover}" alt="\${disc.label}" />
+                  </a>
+                </p>
+              \`
+
+              const discsDiv = document.getElementById('discs')
+              discsDiv.appendChild(discElement)
+
+              discDetailsDiv.innerHTML = ''
+            })
+          })
+        </script>
       </body>
     </html>
   `)
 })
+
 
 export default app
